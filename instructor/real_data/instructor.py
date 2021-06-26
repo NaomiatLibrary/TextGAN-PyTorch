@@ -257,6 +257,9 @@ class BasicInstructor:
         """Save model state dict and generator's samples"""
         if phase != 'ADV':
             torch.save(self.gen.state_dict(), cfg.save_model_root + 'gen_{}_{:05d}.pt'.format(phase, epoch))
+        else:
+            torch.save(self.gen.state_dict(), cfg.save_model_root + 'gen_ADV_{:05d}.pt'.format(epoch))
+            torch.save(self.dis.state_dict(), cfg.save_model_root + 'dis_ADV_{:05d}.pt'.format(epoch))
         save_sample_path = cfg.save_samples_root + 'samples_{}_{:05d}.txt'.format(phase, epoch)
         samples = self.gen.sample(cfg.batch_size, cfg.batch_size)
         write_tokens(save_sample_path, tensor_to_tokens(samples, self.idx2word_dict))

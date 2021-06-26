@@ -110,3 +110,9 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+#log
+*/slurm-*.out
+#singularity
+*/textgan
+textgan

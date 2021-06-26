@@ -18,11 +18,12 @@ from models.relational_rnn_general import RelationalMemory
 
 class EvoGAN_G(LSTMGenerator):
     def __init__(self, mem_slots, num_heads, head_size, embedding_dim, hidden_dim, vocab_size, max_seq_len, padding_idx,
-                 gpu=False):
+                 gpu=False,load_model=None):
         super(EvoGAN_G, self).__init__(embedding_dim, hidden_dim, vocab_size, max_seq_len, padding_idx, gpu)
         self.name = 'evogan'
-
-        self.temperature = nn.Parameter(torch.Tensor([1.0]), requires_grad=False)  # init value is 1.0
+        self.gpu=gpu
+        if not load_model:
+            self.temperature = nn.Parameter(torch.Tensor([1.0]), requires_grad=False)  # init value is 1.0
 
         self.embeddings = nn.Embedding(vocab_size, embedding_dim, padding_idx=padding_idx)
         if cfg.model_type == 'LSTM':
@@ -34,10 +35,15 @@ class EvoGAN_G(LSTMGenerator):
             # RMC
             self.hidden_dim = mem_slots * num_heads * head_size
             self.lstm = RelationalMemory(mem_slots=mem_slots, head_size=head_size, input_size=embedding_dim,
-                                         num_heads=num_heads, return_all_outputs=True)
+                                        num_heads=num_heads, return_all_outputs=True)
             self.lstm2out = nn.Linear(self.hidden_dim, vocab_size)
 
         self.init_params()
+
+        if load_model:
+            print("load_model:",load_model)
+            self.load_state_dict(torch.load(load_model,map_location='cpu'),strict=False)
+
 
     def init_hidden(self, batch_size=cfg.batch_size):
         if cfg.model_type == 'LSTM':
@@ -54,7 +60,7 @@ class EvoGAN_G(LSTMGenerator):
             memory = self.lstm.repackage_hidden(memory)  # detch memory at first
             return memory.cuda() if self.gpu else memory
 
-    def step(self, inp, hidden):
+    def step(self, inp, hidden,CUDA=True):
         """
         RelGAN step forward
         :param inp: [batch_size]
@@ -68,7 +74,10 @@ class EvoGAN_G(LSTMGenerator):
         """
         emb = self.embeddings(inp).unsqueeze(1)
         out, hidden = self.lstm(emb, hidden)
-        gumbel_t = self.add_gumbel(self.lstm2out(out.squeeze(1)))
+        if CUDA:
+            gumbel_t = self.add_gumbel(self.lstm2out(out.squeeze(1)))
+        else:
+            gumbel_t = self.add_gumbel(self.lstm2out(out.squeeze(1)),gpu=False)
         next_token = torch.argmax(gumbel_t, dim=1).detach()
         # next_token_onehot = F.one_hot(next_token, cfg.vocab_size).float()  # not used yet
         next_token_onehot = None
@@ -79,7 +88,7 @@ class EvoGAN_G(LSTMGenerator):
 
         return pred, hidden, next_token, next_token_onehot, next_o
 
-    def sample(self, num_samples, batch_size, one_hot=False, start_letter=cfg.start_letter):
+    def sample(self, num_samples, batch_size, one_hot=False, start_letter=cfg.start_letter, CUDA=True):
         """
         Sample from RelGAN Generator
         - one_hot: if return pred of RelGAN, used for adversarial training
@@ -102,7 +111,7 @@ class EvoGAN_G(LSTMGenerator):
                 inp = inp.cuda()
 
             for i in range(self.max_seq_len):
-                pred, hidden, next_token, _, _ = self.step(inp, hidden)
+                pred, hidden, next_token, _, _ = self.step(inp, hidden,CUDA=CUDA)
                 samples[b * batch_size:(b + 1) * batch_size, i] = next_token
                 if one_hot:
                     all_preds[:, i] = pred

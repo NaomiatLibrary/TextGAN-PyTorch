@@ -134,6 +134,7 @@ if __name__ == '__main__':
         from instructor.real_data.sentigan_instructor import SentiGANInstructor
         from instructor.real_data.evogan_instructor import EvoGANInstructor
         from instructor.real_data.catgan_instructor import CatGANInstructor
+        from instructor.real_data.keygan_instructor import KeyGANInstructor
         from instructor.real_data.dgsan_instructor import DGSANInstructor
         from instructor.real_data.cot_instructor import CoTInstructor
 
@@ -160,6 +161,7 @@ if __name__ == '__main__':
         'sentigan': SentiGANInstructor,
         'evogan': EvoGANInstructor,
         'catgan': CatGANInstructor,
+        'keygan': KeyGANInstructor,
         'dgsan': DGSANInstructor,
         'cot': CoTInstructor,
     }

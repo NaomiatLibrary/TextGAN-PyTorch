@@ -3,12 +3,12 @@ import torch
 from models.EvoGAN_D import EvoGAN_D
 from models.EvoGAN_G import EvoGAN_G
 
-gen_path = "./save/20210626/haiku_wakati/evogan_vanilla_dt-Ra_lt-ragan_mt-ra+rs_et-Ra_sl15_temp100_lfd0.001_T0626_0653_25/models/gen_ADV_00000.pt"
-dis_path = "./save/20210626/haiku_wakati/evogan_vanilla_dt-Ra_lt-ragan_mt-ra+rs_et-Ra_sl15_temp100_lfd0.001_T0626_0653_25/models/dis_ADV_00000.pt"
+gen_path = "./save/20210626/haiku_wakati/evogan_vanilla_dt-Ra_lt-ragan_mt-ra+rs_et-Ra_sl15_temp100_lfd0.001_T0626_0653_25/models/gen_ADV_01999.pt"
+dis_path = "./save/20210626/haiku_wakati/evogan_vanilla_dt-Ra_lt-ragan_mt-ra+rs_et-Ra_sl15_temp100_lfd0.001_T0626_0653_25/models/dis_ADV_01999.pt"
 
 import argparse
 from utils.text_process import load_test_dict, text_process
-from utils.text_process import  load_dict,tensor_to_tokens
+from utils.text_process import   write_tokens,load_dict,tensor_to_tokens
 
 
 cfg.if_test = int(False)
@@ -86,5 +86,18 @@ if __name__ == '__main__':
 
     gen_model=EvoGAN_G(cfg.mem_slots, cfg.num_heads, cfg.head_size, cfg.gen_embed_dim, cfg.gen_hidden_dim,
                             cfg.vocab_size, cfg.max_seq_len, cfg.padding_idx,gpu=False,load_model=gen_path)
+    dis_model=EvoGAN_D(cfg.dis_embed_dim, cfg.max_seq_len, cfg.num_rep, cfg.vocab_size,
+                            cfg.padding_idx, gpu=False, load_model=dis_path)
     word2idx_dict, idx2word_dict = load_dict(cfg.dataset)
-    print( tensor_to_tokens(gen_model.sample(64,64,CUDA=False), idx2word_dict) )
+
+    outsamples=None
+    outscore=-1001001001001001001001
+    for g in range(1):
+        ulist=[None]
+        samples=gen_model.sample_from_leading_word(cfg.batch_size,cfg.batch_size,leading_word=10034,CUDA=False,ulist=ulist)
+        score=0#dis_model(samples)
+        if score>outscore:
+            outsamples=samples
+            outscore=score
+    tokens=tensor_to_tokens(outsamples, idx2word_dict) 
+    write_tokens("output.txt",tokens)

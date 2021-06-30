@@ -114,18 +114,20 @@ class KeyGAN_G(LSTMGenerator):
     def forward(self, inp, enchidden, need_hidden=False):
         """
         Embeds input and applies LSTM
-        :param encinp: batch_size
         :param inp: batch_size * seq_len
         :param hidden: (h, c)
         :param need_hidden: if return hidden, use for sampling
         """
-        
+
         emb = self.embeddings(inp)
         if len(inp.size()) == 1:
             emb = emb.unsqueeze(1)  # batch_size * 1 * embedding_dim
         
         #encoder
-        encout,enchidden = self.encoderlstm(emb, enchidden) 
+        keyword_emb = self.embeddings(inp[:,0])
+        if len(inp[:,0].size()) == 1:
+            keyword_emb = keyword_emb.unsqueeze(1)  # batch_size * 1 * embedding_dim
+        encout,enchidden = self.encoderlstm(keyword_emb, enchidden) 
         #enchidden=enchidden[0] #????
 
         #decoder

@@ -116,3 +116,5 @@ venv.bak/
 #singularity
 */textgan
 textgan
+keywords.txt
+output.txt

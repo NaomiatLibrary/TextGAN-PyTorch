@@ -1,10 +1,13 @@
 import config as cfg
 import torch
-from models.EvoGAN_D import EvoGAN_D
-from models.EvoGAN_G import EvoGAN_G
+from models.KeyGAN_D import KeyGAN_D
+from models.KeyGAN_G import KeyGAN_G
 
-gen_path = "./save/20210626/haiku_wakati/evogan_vanilla_dt-Ra_lt-ragan_mt-ra+rs_et-Ra_sl15_temp100_lfd0.001_T0626_0653_25/models/gen_ADV_01999.pt"
-dis_path = "./save/20210626/haiku_wakati/evogan_vanilla_dt-Ra_lt-ragan_mt-ra+rs_et-Ra_sl15_temp100_lfd0.001_T0626_0653_25/models/dis_ADV_01999.pt"
+#全部
+gen_path = "./save/20210628/haiku_wakati/keygan_vanilla_dt-Ra_lt-ragan_mt-ra+rs_et-Ra_sl15_temp100_lfd0.001_T0628_0725_17/models/gen_ADV_01999.pt"
+#最初の単語
+gen_path = "./save/20210629/haiku_wakati/keygan_vanilla_dt-Ra_lt-ragan_mt-ra+rs_et-Ra_sl15_temp100_lfd0.001_T0629_0148_03/models/gen_ADV_01999.pt"
+#dis_path = "./save/20210626/haiku_wakati/evogan_vanilla_dt-Ra_lt-ragan_mt-ra+rs_et-Ra_sl15_temp100_lfd0.001_T0626_0653_25/models/dis_ADV_01999.pt"
 
 import argparse
 from utils.text_process import load_test_dict, text_process
@@ -12,7 +15,7 @@ from utils.text_process import   write_tokens,load_dict,tensor_to_tokens
 
 
 cfg.if_test = int(False)
-cfg.run_model = 'evogan'
+cfg.run_model = 'keygan'
 cfg.k_label = 2
 cfg.CUDA = int(False)
 cfg.ora_pretrain = int(True)
@@ -84,22 +87,13 @@ if __name__ == '__main__':
         cfg.max_seq_len, cfg.vocab_size = text_process('dataset/' + cfg.dataset + '.txt')
         cfg.extend_vocab_size = len(load_test_dict(cfg.dataset)[0])  # init classifier vocab_size
 
-    gen_model=EvoGAN_G(cfg.mem_slots, cfg.num_heads, cfg.head_size, cfg.gen_embed_dim, cfg.gen_hidden_dim,
+    gen_model=KeyGAN_G(cfg.mem_slots, cfg.num_heads, cfg.head_size, cfg.gen_embed_dim, cfg.gen_hidden_dim,
                             cfg.vocab_size, cfg.max_seq_len, cfg.padding_idx,gpu=False,load_model=gen_path)
-    dis_model=EvoGAN_D(cfg.dis_embed_dim, cfg.max_seq_len, cfg.num_rep, cfg.vocab_size,
-                            cfg.padding_idx, gpu=False, load_model=dis_path)
     word2idx_dict, idx2word_dict = load_dict(cfg.dataset)
 
-    outsamples=None
-    outscore=-1001001001001001001001
-    for g in range(1):
-        ulist=[None]
-        leading_word=4571  #桜 4571
-        #samples=gen_model.sample_from_leading_word(cfg.batch_size,cfg.batch_size,leading_word=leading_word,CUDA=False,ulist=ulist)
-        samples=gen_model.sample(cfg.batch_size,cfg.batch_size,CUDA=False,ulist=ulist)
-        score=0#dis_model(samples)
-        if score>outscore:
-            outsamples=samples
-            outscore=score
-    tokens=tensor_to_tokens(outsamples, idx2word_dict) 
+    keywords=[21767] #桜4571 さみしい1204　冬枯れ21767
+    samples=gen_model.sample_from_keyword(keywords,cfg.batch_size,cfg.batch_size,CUDA=False)
+    tokens=tensor_to_tokens(samples, idx2word_dict) 
+    keyword_tokens=tensor_to_tokens(torch.LongTensor([keywords]), idx2word_dict) 
+    write_tokens("keywords.txt",keyword_tokens)
     write_tokens("output.txt",tokens)

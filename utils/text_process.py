@@ -20,9 +20,11 @@ def get_tokenlized(file):
     tokenlized = list()
     with open(file) as raw:
         for text in raw:
-            #text = nltk.word_tokenize(text.lower())
-            #tokenlized.append(text)
-            tokenlized.append(text.strip().split(" "))
+            #英語の場合
+            text = nltk.word_tokenize(text.lower())
+            tokenlized.append(text)
+            #日本語の場合
+            #tokenlized.append(text.strip().split(" "))
     return tokenlized
 
 

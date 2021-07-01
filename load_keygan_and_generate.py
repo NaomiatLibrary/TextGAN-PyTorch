@@ -91,7 +91,7 @@ if __name__ == '__main__':
         cfg.extend_vocab_size = len(load_test_dict(cfg.dataset)[0])  # init classifier vocab_size
 
     gen_model=KeyGAN_G(cfg.mem_slots, cfg.num_heads, cfg.head_size, cfg.gen_embed_dim, cfg.gen_hidden_dim,
-                            cfg.vocab_size, cfg.max_seq_len, cfg.padding_idx,gpu=False,load_model=gen_path)
+                            cfg.vocab_size, cfg.max_seq_len, cfg.padding_idx,cfg.dataset,gpu=False,load_model=gen_path)
     word2idx_dict, idx2word_dict = load_dict(cfg.dataset)
 
     keywords=[3244] #桜4571 さみしい1204　冬枯れ21767 awesome3517 suspenseful 3244 it5600

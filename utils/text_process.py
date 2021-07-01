@@ -13,6 +13,9 @@ import os
 import torch
 
 import config as cfg
+import gensim
+from gensim.models import word2vec
+from gensim.models import KeyedVectors
 
 
 def get_tokenlized(file):
@@ -338,6 +341,35 @@ def build_embedding_matrix(dataset):
         fname = '../glove.42B.300d.txt'  # Glove file
         # fname = '../GoogleNews-vectors-negative300.bin' # Google Word2Vec file
         word2vec_dict = load_word_vec(fname, word2idx_dict=word2idx_dict, type='glove')
+        print('Building embedding matrix:', embed_filename)
+        for word, i in word2idx_dict.items():
+            if word in word2vec_dict:
+                # words not found in embedding index will be randomly initialized.
+                embedding_matrix[int(i)] = word2vec_dict[word]
+        embedding_matrix = torch.FloatTensor(embedding_matrix)
+        torch.save(embedding_matrix, embed_filename)
+    return embedding_matrix
+
+def build_word2vec_embedding_matrix(dataset,embedding_dim):
+    """Load or build Glove embedding matrix."""
+    embed_filename = './dataset/word2vec_embedding_{}_{}d.pt'.format(dataset,embedding_dim)
+    learned_word2vec_filename = './word2vec_models/{}_{}d.vec.pt'.format(dataset,embedding_dim)
+    if not os.path.exists(learned_word2vec_filename):
+        print('Building word2vec :', learned_word2vec_filename)
+        sentences = word2vec.Text8Corpus('./dataset/'+dataset+'.txt')
+        #https://radimrehurek.com/gensim/models/word2vec.html#gensim.models.word2vec.Word2Vec
+        model = word2vec.Word2Vec(sentences, vector_size=embedding_dim,min_count=1, epochs=1000)
+        model.wv.save_word2vec_format(learned_word2vec_filename, binary=True)
+    if os.path.exists(embed_filename):
+        print('Loading embedding:', embed_filename)
+        embedding_matrix = torch.load(embed_filename)
+    else:
+        print('Loading word2vec vectors...')
+        word2idx_dict, _ = load_dict(dataset)
+        embedding_matrix = np.random.random((len(word2idx_dict) + 2, cfg.gen_embed_dim))  # 2 for padding token and start token
+        #fname = '../glove.42B.300d.txt'  # Glove file
+        # fname = '../GoogleNews-vectors-negative300.bin' # Google Word2Vec file
+        word2vec_dict = KeyedVectors.load_word2vec_format(learned_word2vec_filename, binary=True)
         print('Building embedding matrix:', embed_filename)
         for word, i in word2idx_dict.items():
             if word in word2vec_dict:

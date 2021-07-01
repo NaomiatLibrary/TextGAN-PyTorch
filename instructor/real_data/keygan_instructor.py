@@ -35,9 +35,9 @@ class KeyGANInstructor(BasicInstructor):
 
         # generator, discriminator
         self.gen = KeyGAN_G(cfg.mem_slots, cfg.num_heads, cfg.head_size, cfg.gen_embed_dim, cfg.gen_hidden_dim,
-                            cfg.vocab_size, cfg.max_seq_len, cfg.padding_idx, gpu=cfg.CUDA)
+                            cfg.vocab_size, cfg.max_seq_len, cfg.padding_idx,opt.dataset, gpu=cfg.CUDA)
         self.parents = [KeyGAN_G(cfg.mem_slots, cfg.num_heads, cfg.head_size, cfg.gen_embed_dim, cfg.gen_hidden_dim,
-                                 cfg.vocab_size, cfg.max_seq_len, cfg.padding_idx, gpu=cfg.CUDA).state_dict()
+                                 cfg.vocab_size, cfg.max_seq_len, cfg.padding_idx,opt.dataset, gpu=cfg.CUDA).state_dict()
                         for _ in range(cfg.n_parent)]  # list of Generator state_dict
         self.dis = KeyGAN_D(cfg.dis_embed_dim, cfg.max_seq_len, cfg.num_rep, cfg.vocab_size,
                             cfg.padding_idx, gpu=cfg.CUDA)

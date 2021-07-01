@@ -14,21 +14,20 @@ import torch.nn.functional as F
 import config as cfg
 from models.generator import LSTMGenerator
 from models.relational_rnn_general import RelationalMemory
-
+from utils.text_process import build_word2vec_embedding_matrix
 
 
 class KeyGAN_G(LSTMGenerator):
     def __init__(self, mem_slots, num_heads, head_size, embedding_dim, hidden_dim, vocab_size, max_seq_len, padding_idx,
-                 gpu=False,load_model=None):
+                 dataset,gpu=False,load_model=None):
         super(KeyGAN_G, self).__init__(embedding_dim, hidden_dim, vocab_size, max_seq_len, padding_idx, gpu)
         self.name = 'keygan'
         self.gpu=gpu
         if not load_model:
             self.temperature = nn.Parameter(torch.Tensor([1.0]), requires_grad=False)  # init value is 1.0
 
-        self.embeddings = nn.Embedding(vocab_size, embedding_dim, padding_idx=padding_idx)
-
-
+        #self.embeddings = nn.Embedding(vocab_size, embedding_dim, padding_idx=padding_idx)
+        self.embeddings.from_pretrained(build_word2vec_embedding_matrix(dataset,embedding_dim))
         if cfg.model_type == 'LSTM':
             # LSTM
             self.hidden_dim = hidden_dim

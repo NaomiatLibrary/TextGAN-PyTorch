@@ -8,8 +8,8 @@ import gensim
 gen_path = "./save/20210628/haiku_wakati/keygan_vanilla_dt-Ra_lt-ragan_mt-ra+rs_et-Ra_sl15_temp100_lfd0.001_T0628_0725_17/models/gen_ADV_01999.pt"
 #最初の単語
 gen_path = "./save/20210629/haiku_wakati/keygan_vanilla_dt-Ra_lt-ragan_mt-ra+rs_et-Ra_sl15_temp100_lfd0.001_T0629_0148_03/models/gen_ADV_01999.pt"
-# mr15
-gen_path = "./save/20210630/mr15/keygan_vanilla_dt-Ra_lt-ragan_mt-ra+rs_et-Ra_sl19_temp100_lfd0.001_T0630_0705_49/models/gen_ADV_01999.pt"
+# mr15/最初の単語/word2vec
+gen_path = "save/20210701/mr15/keygan_vanilla_dt-Ra_lt-ragan_mt-ra+rs_et-Ra_sl19_temp100_lfd0.001_T0701_0800_28/models/gen_ADV_01999.pt"
 #dis_path = "./save/20210626/haiku_wakati/evogan_vanilla_dt-Ra_lt-ragan_mt-ra+rs_et-Ra_sl15_temp100_lfd0.001_T0626_0653_25/models/dis_ADV_01999.pt"
 
 import argparse
@@ -91,10 +91,10 @@ if __name__ == '__main__':
         cfg.extend_vocab_size = len(load_test_dict(cfg.dataset)[0])  # init classifier vocab_size
 
     gen_model=KeyGAN_G(cfg.mem_slots, cfg.num_heads, cfg.head_size, cfg.gen_embed_dim, cfg.gen_hidden_dim,
-                            cfg.vocab_size, cfg.max_seq_len, cfg.padding_idx,cfg.dataset,gpu=False,load_model=gen_path)
+                            cfg.vocab_size, cfg.max_seq_len,cfg.max_key_len, cfg.padding_idx,cfg.dataset,gpu=False,load_model=gen_path)
     word2idx_dict, idx2word_dict = load_dict(cfg.dataset)
 
-    keywords=[3244] #桜4571 さみしい1204　冬枯れ21767 awesome3517 suspenseful 3244 it5600
+    keywords=[1037] #桜4571 さみしい1204　冬枯れ21767 awesome3517 suspenseful 3244 it5600 boring 3894 bad1037
     samples=gen_model.sample_from_keyword(keywords,cfg.batch_size,cfg.batch_size,CUDA=False)
     tokens=tensor_to_tokens(samples, idx2word_dict) 
     keyword_tokens=tensor_to_tokens(torch.LongTensor([keywords]), idx2word_dict) 

@@ -18,12 +18,13 @@ dis_num_filters = [300, 300, 300, 300]
 
 
 class KeyGAN_D(CNNDiscriminator):
-    def __init__(self, embed_dim, max_seq_len, num_rep, vocab_size, padding_idx, gpu=False, dropout=0.25, load_model=None):
+    def __init__(self, embed_dim, max_seq_len,max_key_len, num_rep, vocab_size, padding_idx, gpu=False, dropout=0.25, load_model=None):
         super(KeyGAN_D, self).__init__(embed_dim, vocab_size, dis_filter_sizes, dis_num_filters, padding_idx,
                                        gpu, dropout)
 
         self.embed_dim = embed_dim
         self.max_seq_len = max_seq_len
+        self.max_key_len = max_key_len
         self.feature_dim = sum(dis_num_filters)
         self.emb_dim_single = int(embed_dim / num_rep)
 

@@ -135,12 +135,15 @@ def tensor_to_tokens(tensor, dictionary):
         for word in sent.tolist():
             if word == cfg.padding_idx:
                 break
-            sent_token.append(dictionary[str(word)])
+            if str(word) in dictionary:
+                sent_token.append(dictionary[str(word)])
+            else:
+                sent_token.append(cfg.padding_token)
         tokens.append(sent_token)
     return tokens
 
 
-def tokens_to_tensor(tokens, dictionary):
+def tokens_to_tensor(tokens, dictionary,max_len=cfg.max_seq_len):
     """transform word tokens to Tensor"""
     global i
     tensor = []
@@ -149,11 +152,14 @@ def tokens_to_tensor(tokens, dictionary):
         for i, word in enumerate(sent):
             if word == cfg.padding_token:
                 break
-            sent_ten.append(int(dictionary[str(word)]))
-        while i < cfg.max_seq_len - 1:
+            if str(word) in dictionary:
+                sent_ten.append(int(dictionary[str(word)]))
+            else:
+                sent_ten.append(cfg.padding_idx)
+        while len(sent_ten)<max_len:
             sent_ten.append(cfg.padding_idx)
             i += 1
-        tensor.append(sent_ten[:cfg.max_seq_len])
+        tensor.append(sent_ten[:max_len])
     return torch.LongTensor(tensor)
 
 
@@ -379,9 +385,31 @@ def build_word2vec_embedding_matrix(dataset,embedding_dim):
         torch.save(embedding_matrix, embed_filename)
     return embedding_matrix
 
+def extract_keyword(dataset,lang="en"):
+    data_filename =       './dataset/{}.txt'.format(dataset)
+    keyword_filename = './dataset/{}_keywords.txt'.format(dataset)
+    if not os.path.exists(keyword_filename):
+        print('extract keywords from {}'.format(dataset))
+        nltk.download('averaged_perceptron_tagger')
+        with open(keyword_filename,'w') as wf:
+            with open(data_filename,'r') as rf:
+                sentences=rf.readlines()
+                print(sentences[0])
+                for sentence in sentences:
+                    text = nltk.word_tokenize(sentence)
+                    text_tagged=nltk.pos_tag(text)
+                    keyword_list=[]
+                    for word in text_tagged:
+                        if word[1] in ["JJ","JJR","JJS","NN","NNS","NNP","NNPS"]:#adjective or (non pro-)noun
+                            keyword_list.append(word[0])
+                    wf.write(' '.join(keyword_list))
+                    wf.write('\n')
+
+
 
 if __name__ == '__main__':
     os.chdir('../')
+    #extract_keyword("mr15",1)
     # process_cat_text()
     # load_test_dict('mr15')
     # extend_clas_train_data()

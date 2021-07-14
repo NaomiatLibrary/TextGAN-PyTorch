@@ -22,7 +22,7 @@ from metrics.nll import NLL
 from metrics.ppl import PPL
 from models.KeyGAN_D import KeyGAN_D
 from models.KeyGAN_G import KeyGAN_G
-from utils.data_loader import GenDataIter
+from utils.key_data_loader import KeyGenDataIter
 from utils.gan_loss import GANLoss
 from utils.helpers import Signal, create_logger,get_fixed_temperature, get_losses
 from utils.text_process import load_dict, write_tokens, tensor_to_tokens
@@ -31,18 +31,23 @@ from utils.cat_data_loader import CatClasDataIter
 
 class KeyGANInstructor(BasicInstructor):
     def __init__(self, opt):
+        # Dataloader
+        self.train_data = KeyGenDataIter(cfg.train_data, keywords=cfg.keyword_data)
+        self.test_data = KeyGenDataIter(cfg.test_data,if_test_data=True)
         super(KeyGANInstructor, self).__init__(opt)
 
         # generator, discriminator
         self.gen = KeyGAN_G(cfg.mem_slots, cfg.num_heads, cfg.head_size, cfg.gen_embed_dim, cfg.gen_hidden_dim,
-                            cfg.vocab_size, cfg.max_seq_len, cfg.padding_idx,opt.dataset, gpu=cfg.CUDA)
+                            cfg.vocab_size, cfg.max_seq_len,cfg.max_key_len, cfg.padding_idx,opt.dataset, gpu=cfg.CUDA)
         self.parents = [KeyGAN_G(cfg.mem_slots, cfg.num_heads, cfg.head_size, cfg.gen_embed_dim, cfg.gen_hidden_dim,
-                                 cfg.vocab_size, cfg.max_seq_len, cfg.padding_idx,opt.dataset, gpu=cfg.CUDA).state_dict()
+                                 cfg.vocab_size, cfg.max_seq_len, cfg.max_key_len, cfg.padding_idx,opt.dataset, gpu=cfg.CUDA).state_dict()
                         for _ in range(cfg.n_parent)]  # list of Generator state_dict
-        self.dis = KeyGAN_D(cfg.dis_embed_dim, cfg.max_seq_len, cfg.num_rep, cfg.vocab_size,
+        self.dis = KeyGAN_D(cfg.dis_embed_dim, cfg.max_seq_len,cfg.max_key_len, cfg.num_rep, cfg.vocab_size,
                             cfg.padding_idx, gpu=cfg.CUDA)
 
         self.init_model()
+
+        
 
         # Optimizer
         self.gen_opt = optim.Adam(self.gen.parameters(), lr=cfg.gen_lr)
@@ -150,12 +155,11 @@ class KeyGANInstructor(BasicInstructor):
     def train_gen_epoch(self, model, data_loader, criterion, optimizer): #追加
         total_loss = 0
         for i, data in enumerate(data_loader):
-            inp, target = data['input'], data['target']
+            inp, key, target = data['input'],data['keyword'],data['target']
             if cfg.CUDA:
-                inp, target = inp.cuda(), target.cuda()
-            #encinp=inp #これでいいのか？keywordは全てとなる
+                inp, key,target = inp.cuda(), key.cuda(),target.cuda()
             enchidden = model.init_hidden(data_loader.batch_size)
-            pred = model.forward(inp, enchidden) #変更
+            pred = model.forward(inp,enchidden,key=key) #変更
             loss = criterion(pred, target.view(-1))
             self.optimize(optimizer, loss, model)
             total_loss += loss.item()
@@ -333,7 +337,7 @@ class KeyGANInstructor(BasicInstructor):
         """Evaluation all children, update child score. Note that the eval data should be the same"""
         keywords = [random.randrange(cfg.vocab_size)]#これでいいのか？
         eval_samples = self.gen.sample_from_keyword(keywords,cfg.eval_b_num * cfg.batch_size, cfg.max_bn * cfg.batch_size)
-        gen_data = GenDataIter(eval_samples)
+        gen_data = KeyGenDataIter(eval_samples, keywords=torch.LongTensor([keywords * (cfg.eval_b_num * cfg.batch_size)]))
 
         # Fd
         if cfg.lambda_fd != 0:
@@ -395,7 +399,7 @@ class KeyGANInstructor(BasicInstructor):
             # Prepare data for evaluation
             keywords = [random.randrange(cfg.vocab_size)]#これでいいのか？
             eval_samples = self.gen.sample_from_keyword(keywords,cfg.samples_num, 4 * cfg.batch_size)
-            gen_data = GenDataIter(eval_samples)
+            gen_data = KeyGenDataIter(eval_samples)
             gen_tokens = tensor_to_tokens(eval_samples, self.idx2word_dict)
             keywords = [random.randrange(cfg.vocab_size)]#これでいいのか？
             gen_tokens_s = tensor_to_tokens(self.gen.sample_from_keyword(keywords,200, 200), self.idx2word_dict)
@@ -419,7 +423,7 @@ class KeyGANInstructor(BasicInstructor):
             # Prepare data for evaluation
             keywords = [random.randrange(cfg.vocab_size)]#これでいいのか？
             eval_samples = self.gen.sample_from_keyword(keywords,cfg.samples_num, 8 * cfg.batch_size, label_i=label_i)
-            gen_data = GenDataIter(eval_samples)
+            gen_data = KeyGenDataIter(eval_samples,keywords=torch.LongTensor([keywords * cfg.samples_num]))
             gen_tokens = tensor_to_tokens(eval_samples, self.idx2word_dict)
             keywords = [random.randrange(cfg.vocab_size)]#これでいいのか？
             gen_tokens_s = tensor_to_tokens(self.gen.sample_from_keyword(keywords,200, 200, label_i=label_i), self.idx2word_dict)

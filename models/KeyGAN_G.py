@@ -18,9 +18,10 @@ from utils.text_process import build_word2vec_embedding_matrix
 
 
 class KeyGAN_G(LSTMGenerator):
-    def __init__(self, mem_slots, num_heads, head_size, embedding_dim, hidden_dim, vocab_size, max_seq_len, padding_idx,
+    def __init__(self, mem_slots, num_heads, head_size, embedding_dim, hidden_dim, vocab_size, max_seq_len, max_key_len, padding_idx,
                  dataset,gpu=False,load_model=None):
         super(KeyGAN_G, self).__init__(embedding_dim, hidden_dim, vocab_size, max_seq_len, padding_idx, gpu)
+        self.max_key_len = max_key_len
         self.name = 'keygan'
         self.gpu=gpu
         if not load_model:
@@ -110,26 +111,28 @@ class KeyGAN_G(LSTMGenerator):
 
         return out, hidden
 
-    def forward(self, inp, enchidden, need_hidden=False):
+    def forward(self, inp, enchidden,key=None,need_hidden=False):
         """
         Embeds input and applies LSTM
         :param inp: batch_size * seq_len
+        :param key: batch_size * key_len
         :param hidden: (h, c)
         :param need_hidden: if return hidden, use for sampling
         """
 
+        
+        #encoder
+        if key is not None:
+            keyword_emb = self.embeddings(key) # batch_size * max_key_len * embedding_dim
+            if len(key.size()) == 1:
+                keyword_emb = keyword_emb.unsqueeze(1)  # batch_size * 1 * embedding_dim
+            encout,enchidden = self.encoderlstm(keyword_emb, enchidden) 
+            #enchidden=enchidden[0] #????
+
+        #decoder
         emb = self.embeddings(inp)
         if len(inp.size()) == 1:
             emb = emb.unsqueeze(1)  # batch_size * 1 * embedding_dim
-        
-        #encoder
-        keyword_emb = self.embeddings(inp[:,0])
-        if len(inp[:,0].size()) == 1:
-            keyword_emb = keyword_emb.unsqueeze(1)  # batch_size * 1 * embedding_dim
-        encout,enchidden = self.encoderlstm(keyword_emb, enchidden) 
-        #enchidden=enchidden[0] #????
-
-        #decoder
         #encoderの隠れ層を用いてforward
         out, hidden = self.lstm(emb, enchidden)  # out: batch_size * seq_len * hidden_dim
         out = out.contiguous().view(-1, self.hidden_dim)  # out: (batch_size * len) * hidden_dim

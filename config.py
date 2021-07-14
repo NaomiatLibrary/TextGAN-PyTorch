@@ -43,7 +43,7 @@ use_population = False
 
 # ===Oracle or Real, type===
 if_real_data = False  # if use real data
-dataset = 'oracle'  # oracle, image_coco, emnlp_news, amazon_app_book, amazon_app_movie, mr15
+dataset = 'mr15'  # oracle, image_coco, emnlp_news, amazon_app_book, amazon_app_movie, mr15
 model_type = 'vanilla'  # vanilla, RMC (custom)
 loss_type = 'rsgan'  # rsgan lsgan ragan vanilla wgan hinge, for Discriminator (CatGAN)
 mu_type = 'ragan'  # rsgan lsgan ragan vanilla wgan hinge
@@ -51,6 +51,7 @@ eval_type = 'Ra'  # standard, rsgan, nll, nll-f1, Ra, bleu3, bleu-f1
 d_type = 'Ra'  # S (Standard), Ra (Relativistic_average)
 vocab_size = 5000  # oracle: 5000, coco: 4683, emnlp: 5256, amazon_app_book: 6418, mr15: 6289
 max_seq_len = 20  # oracle: 20, coco: 37, emnlp: 51, amazon_app_book: 40
+max_key_len = 3 #keyword length
 ADV_train_epoch = 2000  # SeqGAN, LeakGAN-200, RelGAN-3000
 extend_vocab_size = 0  # plus test data, only used for Classifier
 
@@ -79,6 +80,7 @@ pre_log_step = 10
 adv_log_step = 20
 
 train_data = 'dataset/' + dataset + '.txt'
+keyword_data = 'dataset/' + dataset + '_keywords.txt'
 test_data = 'dataset/testdata/' + dataset + '_test.txt'
 cat_train_data = 'dataset/' + dataset + '_cat{}.txt'
 cat_test_data = 'dataset/testdata/' + dataset + '_cat{}_test.txt'

@@ -337,7 +337,7 @@ class KeyGANInstructor(BasicInstructor):
         """Evaluation all children, update child score. Note that the eval data should be the same"""
         keywords = [random.randrange(cfg.vocab_size)]#これでいいのか？
         eval_samples = self.gen.sample_from_keyword(keywords,cfg.eval_b_num * cfg.batch_size, cfg.max_bn * cfg.batch_size)
-        gen_data = KeyGenDataIter(eval_samples, keywords=torch.LongTensor([keywords * (cfg.eval_b_num * cfg.batch_size)]))
+        gen_data = KeyGenDataIter(eval_samples)
 
         # Fd
         if cfg.lambda_fd != 0:

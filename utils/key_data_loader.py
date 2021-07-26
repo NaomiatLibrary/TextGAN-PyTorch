@@ -73,10 +73,9 @@ class KeyGenDataIter:
         inp = torch.zeros(samples.size()).long()
         target = samples
         inp[:, 0] = cfg.start_letter
-        inp[:, 1:cfg.max_seq_len] = target[:, 0:cfg.max_seq_len - 1]
+        inp[:, 1:cfg.max_seq_len] = target[:, 0:(cfg.max_seq_len - 1)]
         if keywords is None:
-            keyword = torch.zeros(samples.size()).long() #これでいいのか？
-            keyword = keyword[:,:cfg.max_key_len]
+            keyword = samples[:,:cfg.max_key_len]#これでいいのか？
         else:
             keyword=keywords[:, :cfg.max_key_len]
 

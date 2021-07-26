@@ -14,8 +14,8 @@ import torch.nn.functional as F
 import config as cfg
 from models.generator import LSTMGenerator
 from models.relational_rnn_general import RelationalMemory
-from utils.text_process import build_word2vec_embedding_matrix
-
+from utils.text_process import build_word2vec_embedding_matrix,calculate_keyword_score
+import random
 
 class KeyGAN_G(LSTMGenerator):
     def __init__(self, mem_slots, num_heads, head_size, embedding_dim, hidden_dim, vocab_size, max_seq_len, max_key_len, padding_idx,
@@ -52,7 +52,15 @@ class KeyGAN_G(LSTMGenerator):
 
         if load_model:
             print("load_model:",load_model)
-            self.load_state_dict(torch.load(load_model,map_location='cpu'),strict=False)
+            if self.gpu:
+                self.load_state_dict(torch.load(load_model),strict=False)
+                device=torch.device("cuda")
+                self.embeddings = self.embeddings.cuda(device)
+                self.encoderlstm = self.encoderlstm.cuda(device)
+                self.lstm = self.lstm.cuda(device)
+                self.lstm2out = self.lstm2out.cuda(device)
+            else:
+                self.load_state_dict(torch.load(load_model,map_location='cpu'),strict=False)
 
 
     def init_hidden(self, batch_size=cfg.batch_size):
@@ -186,6 +194,79 @@ class KeyGAN_G(LSTMGenerator):
 
         if one_hot:
             return all_preds  # batch_size * seq_len * vocab_size
+        return samples
+
+
+    def sample_from_keyword_with_ES(self, keywords, num_samples, batch_size,idx2worddict, start_letter=cfg.start_letter, CUDA=True, ulist=None):
+        """
+        Sample from RelGAN Generator
+        - keyword: [int] * keywordnum of keyword
+        - one_hot: if return pred of RelGAN, used for adversarial training
+        :return:
+            - all_preds: batch_size * seq_len * vocab_size, only use for a batch
+            - samples: all samples
+        """
+        global all_preds
+        num_batch = num_samples // batch_size + 1 if num_samples != batch_size else 1
+        samples = torch.zeros(num_batch * batch_size, self.max_seq_len).long()
+        samples_child = torch.zeros(num_batch * batch_size, self.max_seq_len).long()
+        # encoder
+        encoder_hidden=self.init_hidden(batch_size)
+        for keyword in keywords:
+            inp = torch.LongTensor([keyword] * batch_size)
+            if self.gpu:
+                inp = inp.cuda()
+            encoder_out,encoder_hidden=self.step_encoder(inp,encoder_hidden)
+        
+        sigma=1 #(1+1)-ES sigma
+        for g in range(cfg.generation): 
+            samples = torch.zeros(num_batch * batch_size, self.max_seq_len).long()
+            samples_child = torch.zeros(num_batch * batch_size, self.max_seq_len).long()
+            # mutation
+            dimension= self.lstm.mem_slots*self.lstm.mem_size#dimension (batch_size, self.mem_slots, self.mem_size)
+            r = max(1/dimension,min(1,cfg.alpha*random.random()))
+            encoder_hidden_child=encoder_hidden
+            for d in range(dimension):
+                if random.random() < r:
+                    random_diff=random.normalvariate(0, sigma)
+                    for b in range(batch_size):
+                        encoder_hidden_child[b,d//self.lstm.mem_size,d%self.lstm.mem_size]=encoder_hidden[b,d//self.lstm.mem_size,d%self.lstm.mem_size]+random_diff
+
+            # decoder
+            for b in range(num_batch):
+                hidden = encoder_hidden
+                inp = torch.LongTensor([start_letter] * batch_size)
+                if self.gpu:
+                    inp = inp.cuda()
+
+                for i in range(self.max_seq_len):
+                    pred, hidden, next_token, _, _ = self.step_decoder(inp, hidden,CUDA=CUDA,ulist=ulist)
+                    samples[b * batch_size:(b + 1) * batch_size, i] = next_token
+                    inp = next_token
+            samples = samples[:num_samples]  # num_samples * seq_len
+
+            # decoder
+            for b in range(num_batch):
+                hidden = encoder_hidden_child
+                inp = torch.LongTensor([start_letter] * batch_size)
+                if self.gpu:
+                    inp = inp.cuda()
+
+                for i in range(self.max_seq_len):
+                    pred, hidden, next_token, _, _ = self.step_decoder(inp, hidden,CUDA=CUDA,ulist=ulist)
+                    samples[b * batch_size:(b + 1) * batch_size, i] = next_token
+                    inp = next_token
+            samples_child = samples_child[:num_samples]  # num_samples * seq_len
+
+            score=calculate_keyword_score(keywords,samples,idx2worddict)
+            score_child=calculate_keyword_score(keywords,samples_child,idx2worddict)
+            if score_child>score:
+                samples=samples_child
+                encoder_hidden=encoder_hidden_child
+                print("update:"+str(score_child)+">"+str(score))
+            else:
+                print("not update:"+str(score_child)+"<"+str(score))
+
         return samples
 
     @staticmethod

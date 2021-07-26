@@ -113,10 +113,11 @@ venv.bak/
 
 #log
 */slurm-*.out
+slurm-*.out
 #singularity
 */textgan
 textgan
 keywords.txt
-output.txt
+output*.txt
 #word2vec
 word2vec_models/*

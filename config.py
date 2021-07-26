@@ -16,7 +16,7 @@ import torch
 # ===Program===
 if_test = False
 CUDA = True
-multi_gpu = False
+multi_gpu = True
 if_save = True
 data_shuffle = False  # False
 oracle_pretrain = True  # True
@@ -43,15 +43,15 @@ use_population = False
 
 # ===Oracle or Real, type===
 if_real_data = False  # if use real data
-dataset = 'mr15'  # oracle, image_coco, emnlp_news, amazon_app_book, amazon_app_movie, mr15
+dataset = 'image_coco'  # change here! oracle, image_coco, emnlp_news, amazon_app_book, amazon_app_movie, mr15
 model_type = 'vanilla'  # vanilla, RMC (custom)
 loss_type = 'rsgan'  # rsgan lsgan ragan vanilla wgan hinge, for Discriminator (CatGAN)
 mu_type = 'ragan'  # rsgan lsgan ragan vanilla wgan hinge
 eval_type = 'Ra'  # standard, rsgan, nll, nll-f1, Ra, bleu3, bleu-f1
 d_type = 'Ra'  # S (Standard), Ra (Relativistic_average)
-vocab_size = 5000  # oracle: 5000, coco: 4683, emnlp: 5256, amazon_app_book: 6418, mr15: 6289
-max_seq_len = 20  # oracle: 20, coco: 37, emnlp: 51, amazon_app_book: 40
-max_key_len = 3 #keyword length
+vocab_size = 5683 # change here! oracle: 5000, coco: 4683, emnlp: 5256, amazon_app_book: 6418, mr15: 6289
+max_seq_len = 37  # change here! oracle: 20, coco: 37, emnlp: 51, amazon_app_book: 40
+max_key_len = 5 #keyword length
 ADV_train_epoch = 2000  # SeqGAN, LeakGAN-200, RelGAN-3000
 extend_vocab_size = 0  # plus test data, only used for Classifier
 
@@ -61,7 +61,7 @@ evo_temp_step = 1
 temperature = 1
 
 # ===Basic Train===
-samples_num = 10000  # 10000, mr15: 2000,
+samples_num = 10000  #change here! 10000, mr15: 2000,
 MLE_train_epoch = 150  # SeqGAN-80, LeakGAN-8, RelGAN-150
 PRE_clas_epoch = 10
 inter_epoch = 15  # LeakGAN-10
@@ -105,6 +105,10 @@ step_size = 4  # LeakGAN-4
 mem_slots = 1  # RelGAN-1
 num_heads = 2  # RelGAN-2
 head_size = 256  # RelGAN-256
+
+# KeyGAN-ES
+generation = 10 #generation of evolutionaly algorithm
+alpha=0
 
 # ===Discriminator===
 d_step = 5  # SeqGAN-50, LeakGAN-5

@@ -390,23 +390,34 @@ def extract_keyword(dataset,lang="en"):
     keyword_filename = './dataset/{}_keywords.txt'.format(dataset)
     if not os.path.exists(keyword_filename):
         print('extract keywords from {}'.format(dataset))
-        nltk.download('averaged_perceptron_tagger')
-        with open(keyword_filename,'w') as wf:
-            with open(data_filename,'r') as rf:
-                sentences=rf.readlines()
-                print(sentences[0])
-                for sentence in sentences:
-                    text = nltk.word_tokenize(sentence)
-                    text_tagged=nltk.pos_tag(text)
-                    keyword_list=[]
-                    for word in text_tagged:
-                        if word[1] in ["JJ","JJR","JJS","NN","NNS","NNP","NNPS"]:#adjective or (non pro-)noun
-                            keyword_list.append(word[0])
-                    wf.write(' '.join(keyword_list))
-                    wf.write('\n')
+        if lang=="en":
+            nltk.download('averaged_perceptron_tagger')
+            with open(keyword_filename,'w') as wf:
+                with open(data_filename,'r') as rf:
+                    sentences=rf.readlines()
+                    print(sentences[0])
+                    for sentence in sentences:
+                        text = nltk.word_tokenize(sentence)
+                        text_tagged=nltk.pos_tag(text)
+                        keyword_list=[]
+                        for word in text_tagged:
+                            if word[1] in ["JJ","JJR","JJS","NN","NNS","NNP","NNPS"]:#adjective or (non pro-)noun
+                                keyword_list.append(word[0])
+                        wf.write(' '.join(keyword_list))
+                        wf.write('\n')
+        elif lang=="jp":
+            pass
 
 
 
+def calculate_keyword_score(keywords,sample,dict):
+    score=0
+    dim1,dim2=sample.shape
+    for i in range(dim1):
+        for j in range(dim2):
+            if sample[i,j] in keywords:
+                score+=1 
+    return score
 if __name__ == '__main__':
     os.chdir('../')
     #extract_keyword("mr15",1)

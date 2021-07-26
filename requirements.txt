@@ -3,4 +3,4 @@ numpy==1.21.0
 nltk>=3.4.5
 tqdm==4.32.1
 gensim==4.0.1
-mecab==0.996
+mecab-python3

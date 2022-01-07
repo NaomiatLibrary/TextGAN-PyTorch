@@ -43,14 +43,14 @@ use_population = False
 
 # ===Oracle or Real, type===
 if_real_data = False  # if use real data
-dataset = 'image_coco'  # change here! oracle, image_coco, emnlp_news, amazon_app_book, amazon_app_movie, mr15
+dataset = 'emnlp_news_mini'  # change here! oracle, image_coco, emnlp_news, amazon_app_book, amazon_app_movie, mr15
 model_type = 'vanilla'  # vanilla, RMC (custom)
 loss_type = 'rsgan'  # rsgan lsgan ragan vanilla wgan hinge, for Discriminator (CatGAN)
 mu_type = 'ragan'  # rsgan lsgan ragan vanilla wgan hinge
 eval_type = 'Ra'  # standard, rsgan, nll, nll-f1, Ra, bleu3, bleu-f1
 d_type = 'Ra'  # S (Standard), Ra (Relativistic_average)
-vocab_size = 5683 # change here! oracle: 5000, coco: 4683, emnlp: 5256, amazon_app_book: 6418, mr15: 6289
-max_seq_len = 37  # change here! oracle: 20, coco: 37, emnlp: 51, amazon_app_book: 40
+vocab_size = 5256 # change here! oracle: 5000, coco: 4683, emnlp: 5256, amazon_app_book: 6418, mr15: 6289
+max_seq_len = 51  # change here! oracle: 20, coco: 37, emnlp: 51, amazon_app_book: 40
 max_key_len = 5 #keyword length
 ADV_train_epoch = 2000  # SeqGAN, LeakGAN-200, RelGAN-3000
 extend_vocab_size = 0  # plus test data, only used for Classifier

@@ -10,17 +10,22 @@ from metrics.ppl import PPL
 import gensim
 
 #全部
-gen_path = "./save/20210628/haiku_wakati/keygan_vanilla_dt-Ra_lt-ragan_mt-ra+rs_et-Ra_sl15_temp100_lfd0.001_T0628_0725_17/models/gen_ADV_01999.pt"
+#gen_path = "./save/20210628/haiku_wakati/keygan_vanilla_dt-Ra_lt-ragan_mt-ra+rs_et-Ra_sl15_temp100_lfd0.001_T0628_0725_17/models/gen_ADV_01999.pt"
 #最初の単語
-gen_path = "./save/20210629/haiku_wakati/keygan_vanilla_dt-Ra_lt-ragan_mt-ra+rs_et-Ra_sl15_temp100_lfd0.001_T0629_0148_03/models/gen_ADV_01999.pt"
+#gen_path = "./save/20210629/haiku_wakati/keygan_vanilla_dt-Ra_lt-ragan_mt-ra+rs_et-Ra_sl15_temp100_lfd0.001_T0629_0148_03/models/gen_ADV_01999.pt"
 # mr15/最初の単語/word2vec
-gen_path = "save/20210701/mr15/keygan_vanilla_dt-Ra_lt-ragan_mt-ra+rs_et-Ra_sl19_temp100_lfd0.001_T0701_0800_28/models/gen_ADV_01999.pt"
+#gen_path = "save/20210701/mr15/keygan_vanilla_dt-Ra_lt-ragan_mt-ra+rs_et-Ra_sl19_temp100_lfd0.001_T0701_0800_28/models/gen_ADV_01999.pt"
 #mr15/word2vec/名詞と形容詞
-gen_path = "save/20210714/mr15/keygan_vanilla_dt-Ra_lt-ragan_mt-ra+rs_et-Ra_sl19_temp100_lfd0.001_T0714_1222_24/models/gen_ADV_01999.pt"
+#gen_path = "save/20210714/mr15/keygan_vanilla_dt-Ra_lt-ragan_mt-ra+rs_et-Ra_sl19_temp100_lfd0.001_T0714_1222_24/models/gen_ADV_01999.pt"
 #emnlp_mini/word2vec/名詞と形容詞
-gen_path = "./save/20210721/emnlp_news_mini/keygan_vanilla_dt-Ra_lt-ragan_mt-ra+rs_et-Ra_sl51_temp100_lfd0.001_T0721_1234_23/models/gen_ADV_01440.pt"
+#gen_path = "./save/20210721/emnlp_news_mini/keygan_vanilla_dt-Ra_lt-ragan_mt-ra+rs_et-Ra_sl51_temp100_lfd0.001_T0721_1234_23/models/gen_ADV_01440.pt"
+#image_coco/word2vec/名詞と形容詞
+#gen_path = "./save/20210726/image_coco/keygan_vanilla_dt-Ra_lt-ragan_mt-ra+rs_et-Ra_sl37_temp100_lfd0.001_T0726_0926_02/models/gen_ADV_01080.pt"
 #dis_path = "./save/20210626/haiku_wakati/evogan_vanilla_dt-Ra_lt-ragan_mt-ra+rs_et-Ra_sl15_temp100_lfd0.001_T0626_0653_25/models/dis_ADV_01999.pt"
-
+#mr15/word2vec/GPによるキーワード
+gen_path="./save/20220104/mr15/keygan_vanilla_dt-Ra_lt-ragan_mt-ra+rs_et-Ra_sl19_temp100_lfd0.001_T0104_0823_28/models/gen_ADV_01999.pt"
+#emnlp_news/word2vec/GPによるキーワード
+gen_path="./save/20220105/emnlp_news_mini/keygan_vanilla_dt-Ra_lt-ragan_mt-ra+rs_et-Ra_sl51_temp100_lfd0.001_T0105_0243_46/models/gen_ADV_01640.pt"
 import argparse
 from utils.text_process import load_test_dict, text_process
 from utils.text_process import   write_tokens,load_dict,tensor_to_tokens,tokens_to_tensor
@@ -40,7 +45,7 @@ cfg.tips = '{} experiments'
 
 # ===Oracle or Real===
 cfg.if_real_data = int(True) #param
-cfg.dataset = 'enmlp_news_mini' #param
+cfg.dataset = 'emnlp_news_mini' #param change here!
 cfg.vocab_size = 0
 
 # ===CatGAN Param===
@@ -49,7 +54,7 @@ cfg.loss_type = 'ragan'
 cfg.mu_type = 'ragan rsgan'
 cfg.eval_type = 'Ra'
 cfg.temp_adpt = 'exp'
-cfg.temperature = 100 #param
+cfg.temperature = 100 #param change here!
 cfg.d_out_mean = int(True)
 cfg.lambda_fq = 1.0
 cfg.lambda_fd = 0.001
@@ -62,7 +67,7 @@ cfg.gen_init = 'truncated_normal'
 cfg.dis_init = 'uniform'
 cfg.samples_num = 10000
 cfg.batch_size = 64
-cfg.max_seq_len = 20
+cfg.max_seq_len = 51 #param change here!
 cfg.gen_lr = 0.01
 cfg.gen_adv_lr = 1e-4
 cfg.dis_lr = 1e-4
@@ -75,7 +80,9 @@ cfg.gen_embed_dim = 32
 cfg.gen_hidden_dim = 32
 cfg.mem_slots = 1
 cfg.num_heads = 2
-cfg.head_size = 256 #param
+cfg.head_size = 256 #param change here!
+#dataset = ['oracle', 'mr15', 'amazon_app_book', 'oracle', 'image_coco', 'emnlp_news', 'haiku_wakati','aozora_moriougai','mr15', "emnlp_news_mini"] #change here!
+#head_size = [512, 512, 512, 256, 256, 256, 256, 512, 256, 256] #change here!
 
 # ===Discriminator===
 cfg.ADV_d_step = 3
@@ -103,10 +110,11 @@ if __name__ == '__main__':
                             cfg.vocab_size, cfg.max_seq_len,cfg.max_key_len, cfg.padding_idx,cfg.dataset,gpu=True,load_model=gen_path)
     word2idx_dict, idx2word_dict = load_dict(cfg.dataset)
 
-    keywords= [1037]
+    keywords= [1260]
     # haiku:桜4571 さみしい1204　冬枯れ21767 
     # mr15:awesome3517 suspenseful 3244 it5600 boring 3894 bad1037 good;5873 movie:1443
     # enmlp_news_mini bad:1778 good:1260 america:3793 enjoy:3165 water:781 report:756 better:877
+    # image_coco  man:1682 toilet:3102
     #generate_size=cfg.batch_size
     #samples=gen_model.sample_from_keyword_with_ES(keywords,generate_size,cfg.batch_size,idx2word_dict,CUDA=True)
     #生成

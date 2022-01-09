@@ -118,6 +118,5 @@ slurm-*.out
 */textgan
 textgan
 keywords.txt
-output*.txt
 #word2vec
 word2vec_models/*

@@ -18,14 +18,16 @@ import gensim
 #mr15/word2vec/名詞と形容詞
 #gen_path = "save/20210714/mr15/keygan_vanilla_dt-Ra_lt-ragan_mt-ra+rs_et-Ra_sl19_temp100_lfd0.001_T0714_1222_24/models/gen_ADV_01999.pt"
 #emnlp_mini/word2vec/名詞と形容詞
-#gen_path = "./save/20210721/emnlp_news_mini/keygan_vanilla_dt-Ra_lt-ragan_mt-ra+rs_et-Ra_sl51_temp100_lfd0.001_T0721_1234_23/models/gen_ADV_01440.pt"
+gen_path = "./save/20210721/emnlp_news_mini/keygan_vanilla_dt-Ra_lt-ragan_mt-ra+rs_et-Ra_sl51_temp100_lfd0.001_T0721_1234_23/models/gen_ADV_01440.pt"
 #image_coco/word2vec/名詞と形容詞
 #gen_path = "./save/20210726/image_coco/keygan_vanilla_dt-Ra_lt-ragan_mt-ra+rs_et-Ra_sl37_temp100_lfd0.001_T0726_0926_02/models/gen_ADV_01080.pt"
 #dis_path = "./save/20210626/haiku_wakati/evogan_vanilla_dt-Ra_lt-ragan_mt-ra+rs_et-Ra_sl15_temp100_lfd0.001_T0626_0653_25/models/dis_ADV_01999.pt"
 #mr15/word2vec/GPによるキーワード
-gen_path="./save/20220104/mr15/keygan_vanilla_dt-Ra_lt-ragan_mt-ra+rs_et-Ra_sl19_temp100_lfd0.001_T0104_0823_28/models/gen_ADV_01999.pt"
+#gen_path="./save/20220104/mr15/keygan_vanilla_dt-Ra_lt-ragan_mt-ra+rs_et-Ra_sl19_temp100_lfd0.001_T0104_0823_28/models/gen_ADV_01999.pt"
 #emnlp_news/word2vec/GPによるキーワード
-gen_path="./save/20220105/emnlp_news_mini/keygan_vanilla_dt-Ra_lt-ragan_mt-ra+rs_et-Ra_sl51_temp100_lfd0.001_T0105_0243_46/models/gen_ADV_01640.pt"
+#gen_path="./save/20220105/emnlp_news_mini/keygan_vanilla_dt-Ra_lt-ragan_mt-ra+rs_et-Ra_sl51_temp100_lfd0.001_T0105_0243_46/models/gen_ADV_01640.pt"
+#image_coco/word2vec/GPによるキーワード
+#gen_path="./save/20220107/image_coco/keygan_vanilla_dt-Ra_lt-ragan_mt-ra+rs_et-Ra_sl37_temp100_lfd0.001_T0107_1119_21/models/gen_ADV_01999.pt"
 import argparse
 from utils.text_process import load_test_dict, text_process
 from utils.text_process import   write_tokens,load_dict,tensor_to_tokens,tokens_to_tensor
@@ -67,7 +69,7 @@ cfg.gen_init = 'truncated_normal'
 cfg.dis_init = 'uniform'
 cfg.samples_num = 10000
 cfg.batch_size = 64
-cfg.max_seq_len = 51 #param change here!
+cfg.max_seq_len = 51 #param change here! oracle: 20, coco: 37, emnlp: 51, amazon_app_book: 40
 cfg.gen_lr = 0.01
 cfg.gen_adv_lr = 1e-4
 cfg.dis_lr = 1e-4
@@ -81,8 +83,8 @@ cfg.gen_hidden_dim = 32
 cfg.mem_slots = 1
 cfg.num_heads = 2
 cfg.head_size = 256 #param change here!
-#dataset = ['oracle', 'mr15', 'amazon_app_book', 'oracle', 'image_coco', 'emnlp_news', 'haiku_wakati','aozora_moriougai','mr15', "emnlp_news_mini"] #change here!
-#head_size = [512, 512, 512, 256, 256, 256, 256, 512, 256, 256] #change here!
+#dataset = ['oracle', 'mr15', 'amazon_app_book', 'oracle', 'image_coco', 'emnlp_news', 'haiku_wakati','aozora_moriougai','mr15', "emnlp_news_mini"]
+#head_size = [512, 512, 512, 256, 256, 256, 256, 512, 256, 256]
 
 # ===Discriminator===
 cfg.ADV_d_step = 3
@@ -143,4 +145,4 @@ if __name__ == '__main__':
     tokens=tensor_to_tokens(eval_samples, idx2word_dict) 
     keyword_tokens=tensor_to_tokens(torch.LongTensor([keywords]), idx2word_dict) 
     write_tokens("keywords.txt",keyword_tokens)
-    write_tokens("output.txt",tokens)
+    write_tokens("output_enmini_good.txt",tokens)

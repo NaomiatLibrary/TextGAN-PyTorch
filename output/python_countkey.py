@@ -1,6 +1,6 @@
 from statistics import mean
 import numpy as np
-class CountKet:
+class CountKey:
     def __init__(self, f, keys):
         self.keys = keys
         self.file = f+".txt"

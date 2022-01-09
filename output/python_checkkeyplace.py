@@ -31,26 +31,26 @@ class CheckKeyPlace:
                     lawscores.append(i)
                     break
         score=mean(scores)
-        hakohige_labels.append(self.file[7:])
+        hakohige_labels.append(self.file[7:-4])
         hakohige_data.append(lawscores)
         stderr=np.std(scores, ddof=1) / np.sqrt(len(scores)) if len(scores)>0 else 0
         print("{} {} score:{} stderr:{}".format(self.file,self.key,score,stderr))
 
 
-
-ckp=CheckKeyPlace("output_coco_man", "man")
-ckp=CheckKeyPlace("output_coco_toilet", "toilet")
-ckp=CheckKeyPlace("output_coco_man2", "man")
-ckp=CheckKeyPlace("output_coco_toilet2", "toilet")
-ckp=CheckKeyPlace("output_enmini_good", "good")
-ckp=CheckKeyPlace("output_enmini_bad", "bad")
-ckp=CheckKeyPlace("output_enmini_good2", "good")
-ckp=CheckKeyPlace("output_enmini_bad2", "bad")
 ckp=CheckKeyPlace("output_mr_good", "good")
 ckp=CheckKeyPlace("output_mr_bad", "bad")
 ckp=CheckKeyPlace("output_mr_good2", "good")
 ckp=CheckKeyPlace("output_mr_bad2", "bad")
+ckp=CheckKeyPlace("output_enmini_good", "good")
+ckp=CheckKeyPlace("output_enmini_bad", "bad")
+ckp=CheckKeyPlace("output_enmini_good2", "good")
+ckp=CheckKeyPlace("output_enmini_bad2", "bad")
+ckp=CheckKeyPlace("output_coco_man", "man")
+ckp=CheckKeyPlace("output_coco_toilet", "toilet")
+ckp=CheckKeyPlace("output_coco_man2", "man")
+ckp=CheckKeyPlace("output_coco_toilet2", "toilet")
 
-plt.figure(figsize=(10,6))
+
+plt.figure(figsize=(20,12))
 plt.boxplot(hakohige_data,labels=hakohige_labels)
-plt.save("keyplace.eps")
+plt.savefig("keyplace.eps")

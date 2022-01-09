@@ -8,6 +8,7 @@ import warnings
 warnings.filterwarnings('ignore') # 警告メッセージを出ないようにしている
 
 hakohige_labels=[]
+hakohige_lawdata=[]
 hakohige_data=[]
 class CheckKeyPlace:
     def __init__(self, f, key):
@@ -17,6 +18,7 @@ class CheckKeyPlace:
 
     def check_key_place(self):
         global hakohige_labels
+        global hakohige_lawdata
         global hakohige_data
         handle=open(self.file, 'r')
         lines=handle.readlines()
@@ -32,7 +34,8 @@ class CheckKeyPlace:
                     break
         score=mean(scores)
         hakohige_labels.append(self.file[7:-4])
-        hakohige_data.append(lawscores)
+        hakohige_lawdata.append(lawscores)
+        hakohige_data.append(scores)
         stderr=np.std(scores, ddof=1) / np.sqrt(len(scores)) if len(scores)>0 else 0
         print("{} {} score:{} stderr:{}".format(self.file,self.key,score,stderr))
 
@@ -52,5 +55,8 @@ ckp=CheckKeyPlace("output_coco_toilet2", "toilet")
 
 
 plt.figure(figsize=(20,12))
-plt.boxplot(hakohige_data,labels=hakohige_labels)
+plt.boxplot(hakohige_lawdata,labels=hakohige_labels)
 plt.savefig("keyplace.eps")
+plt.figure(figsize=(20,12))
+plt.boxplot(hakohige_data,labels=hakohige_labels)
+plt.savefig("keyplace_nomarized.eps")

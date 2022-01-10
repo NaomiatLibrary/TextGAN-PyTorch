@@ -41,16 +41,16 @@ class CheckKeyPlace:
 
 
 ckp=CheckKeyPlace("output_mr_good", "good")
-ckp=CheckKeyPlace("output_mr_bad", "bad")
 ckp=CheckKeyPlace("output_mr_good2", "good")
+ckp=CheckKeyPlace("output_mr_bad", "bad")
 ckp=CheckKeyPlace("output_mr_bad2", "bad")
 ckp=CheckKeyPlace("output_enmini_good", "good")
-ckp=CheckKeyPlace("output_enmini_bad", "bad")
 ckp=CheckKeyPlace("output_enmini_good2", "good")
+ckp=CheckKeyPlace("output_enmini_bad", "bad")
 ckp=CheckKeyPlace("output_enmini_bad2", "bad")
 ckp=CheckKeyPlace("output_coco_man", "man")
-ckp=CheckKeyPlace("output_coco_toilet", "toilet")
 ckp=CheckKeyPlace("output_coco_man2", "man")
+ckp=CheckKeyPlace("output_coco_toilet", "toilet")
 ckp=CheckKeyPlace("output_coco_toilet2", "toilet")
 
 

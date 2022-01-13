@@ -16,6 +16,7 @@ from models.generator import LSTMGenerator
 from models.relational_rnn_general import RelationalMemory
 from utils.text_process import build_word2vec_embedding_matrix,calculate_keyword_score
 import random
+from gensim.models import KeyedVectors
 
 class KeyGAN_G(LSTMGenerator):
     def __init__(self, mem_slots, num_heads, head_size, embedding_dim, hidden_dim, vocab_size, max_seq_len, max_key_len, padding_idx,
@@ -119,6 +120,19 @@ class KeyGAN_G(LSTMGenerator):
 
         return out, hidden
 
+    def step_encoder_noemb(self, inp, hidden,CUDA=True, ulist=None):
+        """
+        Encoder step forward
+        :param inp: [batch_size]
+        :param hidden: memory size
+        :return: out,hidden
+            - out: batch_size * vocab_size, use for adversarial training backward
+            - hidden: next hidden
+        """
+        emb = inp.unsqueeze(1)
+        out, hidden = self.encoderlstm(emb, hidden)
+
+        return out, hidden
     def forward(self, inp, enchidden,key=None,need_hidden=False):
         """
         Embeds input and applies LSTM
@@ -195,6 +209,51 @@ class KeyGAN_G(LSTMGenerator):
         if one_hot:
             return all_preds  # batch_size * seq_len * vocab_size
         return samples
+
+    def sample_from_freekeyword(self, keywords, num_samples, batch_size, one_hot=False, start_letter=cfg.start_letter, CUDA=True, ulist=None,learned_word2vec_filename="/home/u00432/iba/TextGAN-PyTorch/word2vec_models/GoogleNews-vectors-negative300.bin"):
+        """
+        Sample from RelGAN Generator
+        - keyword: [int] * keywordnum of keyword
+        - one_hot: if return pred of RelGAN, used for adversarial training
+        :return:
+            - all_preds: batch_size * seq_len * vocab_size, only use for a batch
+            - samples: all samples
+        """
+        word2vec_dict = KeyedVectors.load_word2vec_format(learned_word2vec_filename, binary=True)
+        global all_preds
+        num_batch = num_samples // batch_size + 1 if num_samples != batch_size else 1
+        samples = torch.zeros(num_batch * batch_size, self.max_seq_len).long()
+        if one_hot:
+            all_preds = torch.zeros(batch_size, self.max_seq_len, self.vocab_size)
+            if self.gpu:
+                all_preds = all_preds.cuda()
+
+        # encoder
+        encoder_hidden=self.init_hidden(batch_size)
+        for keyword in keywords:
+            inp = torch.Tensor([word2vec_dict[keyword]] * batch_size)
+            if self.gpu:
+                inp = inp.cuda()
+            encoder_out,encoder_hidden=self.step_encoder_noemb(inp,encoder_hidden)
+        # decoder
+        for b in range(num_batch):
+            hidden = encoder_hidden
+            inp = torch.LongTensor([start_letter] * batch_size)
+            if self.gpu:
+                inp = inp.cuda()
+
+            for i in range(self.max_seq_len):
+                pred, hidden, next_token, _, _ = self.step_decoder(inp, hidden,CUDA=CUDA,ulist=ulist)
+                samples[b * batch_size:(b + 1) * batch_size, i] = next_token
+                if one_hot:
+                    all_preds[:, i] = pred
+                inp = next_token
+        samples = samples[:num_samples]  # num_samples * seq_len
+
+        if one_hot:
+            return all_preds  # batch_size * seq_len * vocab_size
+        return samples
+
 
 
     def sample_from_keyword_with_ES(self, keywords, num_samples, batch_size,idx2worddict, start_letter=cfg.start_letter, CUDA=True, ulist=None):

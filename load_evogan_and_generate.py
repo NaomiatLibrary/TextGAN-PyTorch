@@ -56,7 +56,7 @@ cfg.adv_log_step = 20
 
 # ===Generator===
 cfg.ADV_g_step = 1
-cfg.gen_embed_dim = 32
+cfg.gen_embed_dim = 300 # change here!
 cfg.gen_hidden_dim = 32
 cfg.mem_slots = 1
 cfg.num_heads = 2
@@ -81,7 +81,7 @@ cfg.use_ppl = int(False)
 if __name__ == '__main__':
     # Hyper Parameters
     if cfg.if_real_data:
-        cfg.max_seq_len, cfg.vocab_size = text_process('dataset/' + cfg.dataset + '.txt')
+        cfg.max_seq_len, cfg.vocab_size = text_process('dataset/' + cfg.dataset + '.txt',keyword_text_loc='dataset/' + cfg.dataset + '_keywords.txt')
         cfg.extend_vocab_size = len(load_test_dict(cfg.dataset)[0])  # init classifier vocab_size
 
     gen_model=EvoGAN_G(cfg.mem_slots, cfg.num_heads, cfg.head_size, cfg.gen_embed_dim, cfg.gen_hidden_dim,

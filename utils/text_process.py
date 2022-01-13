@@ -58,14 +58,19 @@ def get_dict(word_set):
     return word2idx_dict, idx2word_dict
 
 
-def text_process(train_text_loc, test_text_loc=None):
+def text_process(train_text_loc, test_text_loc=None,keyword_text_loc=None):
     """get sequence length and dict size"""
     train_tokens = get_tokenlized(train_text_loc)
     if test_text_loc is None:
         test_tokens = list()
     else:
         test_tokens = get_tokenlized(test_text_loc)
-    word_set = get_word_list(train_tokens + test_tokens)
+    if keyword_text_loc is None:
+        keyword_tokens = list()
+    else:
+        keyword_tokens = get_tokenlized(keyword_text_loc)
+    
+    word_set = get_word_list(train_tokens + test_tokens + keyword_tokens)
     word2idx_dict, idx2word_dict = get_dict(word_set)
 
     if test_text_loc is None:
@@ -83,7 +88,8 @@ def init_dict(dataset):
     Finally save dictionary files locally.
     """
     tokens = get_tokenlized('dataset/{}.txt'.format(dataset))
-    word_set = get_word_list(tokens)
+    keyword_tokens = get_tokenlized('dataset/{}_keywords.txt'.format(dataset))
+    word_set = get_word_list(tokens+ keyword_tokens)
     word2idx_dict, idx2word_dict = get_dict(word_set)
 
     with open('dataset/{}_wi_dict.txt'.format(dataset), 'w') as dictout:
@@ -327,7 +333,6 @@ def load_word_vec(path, word2idx_dict=None, type='glove'):
             if word2idx_dict is None or tokens[0] in word2idx_dict.keys():
                 word2vec_dict[tokens[0]] = np.asarray(tokens[1:], dtype='float32')
     elif type == 'word2vec':
-        import gensim
         word2vec_dict = gensim.models.KeyedVectors.load_word2vec_format(path, binary=True)
     else:
         raise NotImplementedError('No such type: %s' % type)
@@ -356,10 +361,14 @@ def build_embedding_matrix(dataset):
         torch.save(embedding_matrix, embed_filename)
     return embedding_matrix
 
-def build_word2vec_embedding_matrix(dataset,embedding_dim):
+def build_word2vec_embedding_matrix(dataset,embedding_dim,word2vectype="google"):
     """Load or build Glove embedding matrix."""
-    embed_filename = './dataset/word2vec_embedding_{}_{}d.pt'.format(dataset,embedding_dim)
-    learned_word2vec_filename = './word2vec_models/{}_{}d.vec.pt'.format(dataset,embedding_dim)
+    if word2vectype=="google":
+        embed_filename = './dataset/word2vec_embedding_google_{}_{}d.pt'.format(dataset,embedding_dim)
+        learned_word2vec_filename = './word2vec_models/GoogleNews-vectors-negative300.bin'
+    else:
+        embed_filename = './dataset/word2vec_embedding_{}_{}d.pt'.format(dataset,embedding_dim)
+        learned_word2vec_filename = './word2vec_models/{}_{}d.vec.pt'.format(dataset,embedding_dim)
     if not os.path.exists(learned_word2vec_filename):
         print('Building word2vec :', learned_word2vec_filename)
         sentences = word2vec.Text8Corpus('./dataset/'+dataset+'.txt')

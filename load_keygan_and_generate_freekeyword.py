@@ -30,7 +30,7 @@ from gensim.models import KeyedVectors
 #image_coco/word2vec/GPによるキーワード
 #gen_path="./save/20220107/image_coco/keygan_vanilla_dt-Ra_lt-ragan_mt-ra+rs_et-Ra_sl37_temp100_lfd0.001_T0107_1119_21/models/gen_ADV_01999.pt"
 #emoint
-gen_path="./save/20220113/emoint/keygan_vanilla_dt-Ra_lt-ragan_mt-ra+rs_et-Ra_sl48_temp100_lfd0.001_T0113_0355_50/models/gen_MLE_00010.pt"
+gen_path="./save/20220113/emoint/keygan_vanilla_dt-Ra_lt-ragan_mt-ra+rs_et-Ra_sl48_temp100_lfd0.001_T0113_0355_50/models/gen_ADV_00500.pt"
 import argparse
 from utils.text_process import load_test_dict, text_process
 from utils.text_process import   write_tokens,load_dict,tensor_to_tokens,tokens_to_tensor
@@ -116,10 +116,11 @@ if __name__ == '__main__':
     word2idx_dict, idx2word_dict = load_dict(cfg.dataset)
     learned_word2vec_filename="/home/u00432/iba/TextGAN-PyTorch/word2vec_models/GoogleNews-vectors-negative300.bin"
     word2vec_dict = KeyedVectors.load_word2vec_format(learned_word2vec_filename, binary=True)
-    keywords= ["miserable"]
+    keywords= ["phobia"] # sadness angry fear joy / miserable irritated
     for keyword in keywords:
         if keyword not in word2vec_dict:
             print("there is no word :",keyword)
+            exit(1)
     # haiku:桜4571 さみしい1204　冬枯れ21767 
     # mr15:awesome3517 suspenseful 3244 it5600 boring 3894 bad1037 good;5873 movie:1443
     # enmlp_news_mini bad:1778 good:1260 america:3793 enjoy:3165 water:781 report:756 better:877
@@ -152,4 +153,5 @@ if __name__ == '__main__':
     print( ', '.join(['%s = %s' % (metric.get_name(), metric.get_score()) for metric in all_metrics]) )
     tokens=tensor_to_tokens(eval_samples, idx2word_dict) 
     write_tokens("keywords.txt",[keywords])
-    write_tokens("output_emoint.txt",tokens)
+    write_tokens("output_emoint_{}.txt".format('_'.join(keywords)),tokens)
+    print("wrote in output_emoint_{}.txt".format('_'.join(keywords)))

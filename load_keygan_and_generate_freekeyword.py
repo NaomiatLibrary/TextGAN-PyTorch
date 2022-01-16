@@ -116,7 +116,7 @@ if __name__ == '__main__':
     word2idx_dict, idx2word_dict = load_dict(cfg.dataset)
     learned_word2vec_filename="/home/u00432/iba/TextGAN-PyTorch/word2vec_models/GoogleNews-vectors-negative300.bin"
     word2vec_dict = KeyedVectors.load_word2vec_format(learned_word2vec_filename, binary=True)
-    keywords= ["phobia"] # sadness angry fear joy / miserable irritated
+    keywords= ["sorrow"] # sadness angry fear joy / miserable irritated
     for keyword in keywords:
         if keyword not in word2vec_dict:
             print("there is no word :",keyword)

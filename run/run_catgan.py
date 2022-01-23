@@ -34,11 +34,11 @@ scriptname = 'main.py'
 # CatGAN: Catgory text generation model
 # EvoGAN: General text generation model
 if_test = int(False)
-run_model = ['catgan', 'catgan', 'catgan', 'evogan', 'evogan', 'evogan','evogan','evogan']
-k_label = 2
+run_model = ['evogan' for i in range(20)] #change here !
+k_label = 2 #change here!
 CUDA = int(True)
 ora_pretrain = int(True)
-gen_pretrain = int(True)
+gen_pretrain = int(False)
 dis_pretrain = int(False)
 MLE_train_epoch = 150
 clas_pre_epoch = 5
@@ -46,9 +46,9 @@ ADV_train_epoch = 2000
 tips = '{} experiments'
 
 # ===Oracle or Real===
-if_real_data = [int(False), int(True), int(True), int(False), int(True), int(True),int(True),int(True)]
-dataset = ['oracle', 'mr15', 'amazon_app_book', 'oracle', 'image_coco', 'emnlp_news', 'haiku_wakati','aozora_moriougai']
-vocab_size = [5000, 0, 0, 5000, 0, 0, 0, 0]
+if_real_data = [int(False), int(True), int(True), int(False), int(True), int(True),int(True),int(True), int(True),int(True),int(True)] #change here!
+dataset = ['oracle', 'mr15', 'amazon_app_book', 'oracle', 'image_coco', 'emnlp_news', 'haiku_wakati','aozora_moriougai','mr15', "emnlp_news_mini","emoint"] #change here!
+vocab_size = [5000, 0, 0, 5000, 0, 0, 0, 0, 0,0,0] #change here!
 
 # ===CatGAN Param===
 n_parent = 1
@@ -56,7 +56,7 @@ loss_type = 'ragan'
 mu_type = 'ragan rsgan'
 eval_type = 'Ra'
 temp_adpt = 'exp'
-temperature = [1, 100, 100, 1, 100, 100, 100, 100]
+temperature = [1, 100, 100, 1, 100, 100, 100, 100, 100,100,100] #change here!
 d_out_mean = int(True)
 lambda_fq = 1.0
 lambda_fd = 0.001
@@ -69,7 +69,7 @@ gen_init = 'truncated_normal'
 dis_init = 'uniform'
 samples_num = 10000
 batch_size = 64
-max_seq_len = 20
+max_seq_len = 51 # change here!
 gen_lr = 0.01
 gen_adv_lr = 1e-4
 dis_lr = 1e-4
@@ -78,11 +78,11 @@ adv_log_step = 20
 
 # ===Generator===
 ADV_g_step = 1
-gen_embed_dim = 32
+gen_embed_dim = 32 #change here!
 gen_hidden_dim = 32
 mem_slots = 1
 num_heads = 2
-head_size = [512, 512, 512, 256, 256, 256, 256, 512]
+head_size = [512, 512, 512, 256, 256, 256, 256, 512, 256, 256,512] #change here!
 
 # ===Discriminator===
 ADV_d_step = 3

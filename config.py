@@ -20,7 +20,7 @@ multi_gpu = True
 if_save = True
 data_shuffle = False  # False
 oracle_pretrain = True  # True
-gen_pretrain = True
+gen_pretrain = False
 dis_pretrain = False
 clas_pretrain = False
 
@@ -43,15 +43,15 @@ use_population = False
 
 # ===Oracle or Real, type===
 if_real_data = False  # if use real data
-dataset = 'emoint'  # change here! oracle, image_coco, emnlp_news, amazon_app_book, amazon_app_movie, mr15
+dataset = 'emnlp_news_mini'  # change here! oracle, image_coco, emnlp_news, amazon_app_book, amazon_app_movie, mr15
 model_type = 'vanilla'  # vanilla, RMC (custom)
 loss_type = 'rsgan'  # rsgan lsgan ragan vanilla wgan hinge, for Discriminator (CatGAN)
 mu_type = 'ragan'  # rsgan lsgan ragan vanilla wgan hinge
 eval_type = 'Ra'  # standard, rsgan, nll, nll-f1, Ra, bleu3, bleu-f1
 d_type = 'Ra'  # S (Standard), Ra (Relativistic_average)
 vocab_size = 5256 # change here! oracle: 5000, coco: 4683, emnlp: 5256, amazon_app_book: 6418, mr15: 6289
-max_seq_len = 48  # change here! oracle: 20, coco: 37, emnlp: 51, amazon_app_book: 40 emoint:48
-max_key_len = 1 #change here! keyword length
+max_seq_len = 51  # change here! oracle: 20, coco: 37, emnlp: 51, amazon_app_book: 40 emoint:48
+max_key_len = 5 #change here! keyword length
 ADV_train_epoch = 2000  # SeqGAN, LeakGAN-200, RelGAN-3000
 extend_vocab_size = 0  # plus test data, only used for Classifier
 
@@ -61,7 +61,7 @@ evo_temp_step = 1
 temperature = 1
 
 # ===Basic Train===
-samples_num = 2000  #change here! 10000, mr15: 2000,
+samples_num = 10000  #change here! 10000, mr15: 2000,
 MLE_train_epoch = 150  # SeqGAN-80, LeakGAN-8, RelGAN-150
 PRE_clas_epoch = 10
 inter_epoch = 15  # LeakGAN-10
@@ -97,7 +97,7 @@ use_ppl = False
 # ===Generator===
 ADV_g_step = 1  # 1
 rollout_num = 16  # 4
-gen_embed_dim = 300  # 32 change here!
+gen_embed_dim = 32  #  change here! keygan:300 catgan:32
 gen_hidden_dim = 32  # 32
 goal_size = 16  # LeakGAN-16
 step_size = 4  # LeakGAN-4

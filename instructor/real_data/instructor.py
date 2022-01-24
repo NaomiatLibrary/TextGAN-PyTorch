@@ -37,11 +37,11 @@ class BasicInstructor:
         self.word2idx_dict, self.idx2word_dict = load_dict(cfg.dataset)
 
         # Dataloader
-        #try:
-            #self.train_data = GenDataIter(cfg.train_data)
-            #self.test_data = GenDataIter(cfg.test_data, if_test_data=True)
-        #except:
-        #    print("ERROR 1")
+        try:
+            self.train_data = GenDataIter(cfg.train_data)
+            self.test_data = GenDataIter(cfg.test_data, if_test_data=True)
+        except:
+            print("ERROR 1")
 
         try:
             self.train_data_list = [GenDataIter(cfg.cat_train_data.format(i)) for i in range(cfg.k_label)]
